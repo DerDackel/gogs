@@ -5,7 +5,7 @@
 package models
 
 import (
-	"container/list"
+//	"container/list"
 	"os/exec"
 	"strings"
 
@@ -46,7 +46,7 @@ func Update(refName, oldCommitId, newCommitId, userName, repoUserName, repoName 
 		return
 	}
 
-	var l *list.List
+	var l []*git.Commit
 	// if a new branch
 	if isNew {
 		l, err = newCommit.CommitsBefore()
@@ -78,8 +78,8 @@ func Update(refName, oldCommitId, newCommitId, userName, repoUserName, repoName 
 	commits := make([]*base.PushCommit, 0)
 	var maxCommits = 3
 	var actEmail string
-	for e := l.Front(); e != nil; e = e.Next() {
-		commit := e.Value.(*git.Commit)
+	for _, commit := range l {
+		//commit := e.Value.(*git.Commit)
 		if actEmail == "" {
 			actEmail = commit.Committer.Email
 		}
@@ -95,7 +95,7 @@ func Update(refName, oldCommitId, newCommitId, userName, repoUserName, repoName 
 
 	//commits = append(commits, []string{lastCommit.Id().String(), lastCommit.Message()})
 	if err = CommitRepoAction(userId, ru.Id, userName, actEmail,
-		repos.Id, repoUserName, repoName, refName, &base.PushCommits{l.Len(), commits}); err != nil {
+		repos.Id, repoUserName, repoName, refName, &base.PushCommits{len(l), commits}); err != nil {
 		qlog.Fatalf("runUpdate.models.CommitRepoAction: %s/%s:%v", repoUserName, repoName, err)
 	}
 }
